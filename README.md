@@ -22,7 +22,7 @@ export completed tasks as CSV.
 |----------------|-------------------------------------------------------------|
 | Language       | Java 17                                                     |
 | Framework      | Spring Boot 4.1 (Web MVC, Data JPA, Security, Validation)   |
-| Persistence    | PostgreSQL, Hibernate 7                                     |
+| Persistence    | PostgreSQL, Hibernate 7, Flyway migrations                  |
 | Authentication | JWT (jjwt 0.12), BCrypt password hashing                    |
 | Mapping        | MapStruct 1.6                                               |
 | CSV            | Apache Commons CSV                                          |
@@ -56,7 +56,10 @@ openssl rand -base64 32
 
 The application fails at startup if `JWT_SECRET` is missing, is not valid Base64, or decodes to fewer than 32 bytes.
 
-The schema is created and updated automatically (`spring.jpa.hibernate.ddl-auto=update`).
+The schema is managed by Flyway. Migrations live in `src/main/resources/db/migration` and run automatically
+on startup. Hibernate only validates the entities against the schema (`spring.jpa.hibernate.ddl-auto=validate`).
+To change the schema, add a new migration (for example `V2__add_something.sql`); never edit a migration that
+has already been applied.
 
 ### Run
 
@@ -230,6 +233,7 @@ Resources owned by other users return `404`, not `403`, so their existence is no
 ## Project structure
 
 ```
+src/main/resources/db/migration/   Flyway SQL migrations
 src/main/java/com/devlab/taskboard/
   config/          Security, OpenAPI, scheduling, clock
   controller/      REST endpoints
@@ -248,5 +252,5 @@ src/main/java/com/devlab/taskboard/
 
 ## Notes
 
-This project is configured for local development: Swagger UI is public, SQL logging is on, and the schema
-is managed by `ddl-auto=update`. There are no automated tests.
+This project is configured for local development: Swagger UI is public and SQL logging is on.
+There are no automated tests.
